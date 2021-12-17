@@ -36,3 +36,5 @@ mod header;
 use std::fs::File;
 
 pub type Container = bpx::core::Container<File>;
+
+pub type Handle = u32;

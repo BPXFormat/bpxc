@@ -9,4 +9,4 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-bpx = "4.0.0-preview1"
+bpx = "4.0.0-preview2"

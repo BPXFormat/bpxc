@@ -30,7 +30,7 @@ use std::os::raw::{c_char, c_uint};
 use std::fs::File;
 use std::ffi::CStr;
 use bpx::core::builder::{Checksum, CompressionMethod, MainHeaderBuilder, SectionHeaderBuilder};
-use crate::Container;
+use crate::{Container, Handle};
 use crate::error_codes::unwrap_or_err;
 use crate::error_codes::{CErrCode, ERR_FILE_CREATE, ERR_FILE_OPEN, ERR_NONE};
 use crate::header::MainHeader;
@@ -85,20 +85,20 @@ pub unsafe fn bpx_container_get_main_header(container: *const Container, main_he
 }
 
 #[no_mangle]
-pub unsafe fn bpx_container_list_sections(container: *const Container, out: *mut bpx::Handle, size: usize)
+pub unsafe fn bpx_container_list_sections(container: *const Container, out: *mut Handle, size: usize)
 {
     let container = &*container;
-    container.iter().map(|v| v.handle()).take(size).enumerate().for_each(|(i, v)| {
-        std::ptr::write(out.add(i * std::mem::size_of::<bpx::Handle>()), v);
+    container.iter().map(|v| v.handle().into_raw()).take(size).enumerate().for_each(|(i, v)| {
+        std::ptr::write(out.add(i), v);
     });
 }
 
 #[no_mangle]
-pub unsafe fn bpx_container_find_section_by_type(container: *const Container, ty: u8, handle: *mut bpx::Handle) -> bool
+pub unsafe fn bpx_container_find_section_by_type(container: *const Container, ty: u8, handle: *mut Handle) -> bool
 {
     let container = &*container;
     if let Some(v) = container.find_section_by_type(ty) {
-        *handle = v;
+        *handle = v.into_raw();
         true
     } else {
         false
@@ -106,11 +106,11 @@ pub unsafe fn bpx_container_find_section_by_type(container: *const Container, ty
 }
 
 #[no_mangle]
-pub unsafe fn bpx_container_find_section_by_index(container: *const Container, idx: u32, handle: *mut bpx::Handle) -> bool
+pub unsafe fn bpx_container_find_section_by_index(container: *const Container, idx: u32, handle: *mut Handle) -> bool
 {
     let container = &*container;
     if let Some(v) = container.find_section_by_index(idx) {
-        *handle = v;
+        *handle = v.into_raw();
         true
     } else {
         false
@@ -118,7 +118,7 @@ pub unsafe fn bpx_container_find_section_by_index(container: *const Container, i
 }
 
 #[no_mangle]
-pub unsafe fn bpx_container_create_section(container: *mut Container, options: *const SectionOptions) -> bpx::Handle
+pub unsafe fn bpx_container_create_section(container: *mut Container, options: *const SectionOptions) -> Handle
 {
     let container = &mut *container;
     let options = &*options;
@@ -139,7 +139,7 @@ pub unsafe fn bpx_container_create_section(container: *mut Container, options: *
     if options.flags & COMPRESSION_THRESHOLD != 0 {
         builder.with_threshold(options.threshold);
     }
-    container.create_section(builder)
+    container.create_section(builder).into_raw()
 }
 
 #[no_mangle]
