@@ -32,9 +32,35 @@ pub mod section;
 mod path_utils;
 mod error_codes;
 mod header;
+mod open;
+mod io_wrapper;
 
 use std::fs::File;
 
 pub type Container = bpx::core::Container<File>;
+pub type Container2 = bpx::core::Container<File>;
 
 pub type Handle = u32;
+
+macro_rules! callback {
+    (($($name: ident: $t: ty),*) $(-> $t1: ty)?) => {
+        unsafe extern "C" fn ($($name: $t),*) $(-> $t1)?
+    };
+}
+
+pub(crate) use callback;
+
+macro_rules! export {
+    (
+        $(
+            fn $name: ident ($($pname: ident: $ptype: ty),*) $(-> $ret: ty)? $body: block
+        )*
+    ) => {
+        $(
+            #[no_mangle]
+            pub unsafe extern "C" fn $name ($($pname: $ptype),*) $(-> $ret)? $body
+        )*
+    };
+}
+
+pub(crate) use export;

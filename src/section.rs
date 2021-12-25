@@ -32,61 +32,60 @@ use crate::{Container, Handle};
 use crate::error_codes::unwrap_or_err;
 use crate::error_codes::{CErrCode, ERR_NONE, ERR_SECTION_IO};
 use crate::header::SectionHeader;
+use crate::export;
 
-#[no_mangle]
-pub unsafe fn bpx_section_get_header(container: *const Container, handle: Handle, section_header: *mut SectionHeader)
+export!
 {
-    let container = &*container;
-    let section_header = &mut *section_header;
-    let section = container.get(bpx::Handle::from_raw(handle));
-    section_header.size = section.size;
-    section_header.chksum = section.chksum;
-    section_header.csize = section.csize;
-    section_header.flags = section.flags;
-    section_header.ty = section.btype;
-    section_header.pointer = section.pointer;
-}
+    fn bpx_section_get_header(container: *const Container, handle: Handle, section_header: *mut SectionHeader)
+    {
+        let container = &*container;
+        let section_header = &mut *section_header;
+        let section = container.get(bpx::Handle::from_raw(handle));
+        section_header.size = section.size;
+        section_header.chksum = section.chksum;
+        section_header.csize = section.csize;
+        section_header.flags = section.flags;
+        section_header.ty = section.btype;
+        section_header.pointer = section.pointer;
+    }
 
-#[no_mangle]
-pub unsafe fn bpx_section_read(container: *mut Container, handle: Handle, buffer: *mut u8, size: usize) -> c_uint
-{
-    let container = &mut *container;
-    let mut section = container.get_mut(bpx::Handle::from_raw(handle));
-    let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
-    std::ptr::write_bytes(buffer, 0, size); //This allows us to initialize the buffer in preparation of std::io::Read call
-    let slice = std::slice::from_raw_parts_mut(buffer, size);
-    unwrap_or_err!(data.read(slice).map_err(|_| ERR_SECTION_IO));
-    ERR_NONE
-}
+    fn bpx_section_read(container: *mut Container, handle: Handle, buffer: *mut u8, size: usize) -> c_uint
+    {
+        let container = &mut *container;
+        let mut section = container.get_mut(bpx::Handle::from_raw(handle));
+        let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
+        std::ptr::write_bytes(buffer, 0, size); //This allows us to initialize the buffer in preparation of std::io::Read call
+        let slice = std::slice::from_raw_parts_mut(buffer, size);
+        unwrap_or_err!(data.read(slice).map_err(|_| ERR_SECTION_IO));
+        ERR_NONE
+    }
 
-#[no_mangle]
-pub unsafe fn bpx_section_seek(container: *mut Container, handle: Handle, pos: u64) -> c_uint
-{
-    let container = &mut *container;
-    let mut section = container.get_mut(bpx::Handle::from_raw(handle));
-    let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
-    unwrap_or_err!(data.seek(SeekFrom::Start(pos)).map_err(|_| ERR_SECTION_IO));
-    ERR_NONE
-}
+    fn bpx_section_seek(container: *mut Container, handle: Handle, pos: u64) -> c_uint
+    {
+        let container = &mut *container;
+        let mut section = container.get_mut(bpx::Handle::from_raw(handle));
+        let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
+        unwrap_or_err!(data.seek(SeekFrom::Start(pos)).map_err(|_| ERR_SECTION_IO));
+        ERR_NONE
+    }
 
-//SAFETY: make sure buffer is initialized otherwise UB!
-#[no_mangle]
-pub unsafe fn bpx_section_write(container: *mut Container, handle: Handle, buffer: *const u8, size: usize) -> c_uint
-{
-    let container = &mut *container;
-    let mut section = container.get_mut(bpx::Handle::from_raw(handle));
-    let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
-    let slice = std::slice::from_raw_parts(buffer, size);
-    unwrap_or_err!(data.write(slice).map_err(|_| ERR_SECTION_IO));
-    ERR_NONE
-}
+    //SAFETY: make sure buffer is initialized otherwise UB!
+    fn bpx_section_write(container: *mut Container, handle: Handle, buffer: *const u8, size: usize) -> c_uint
+    {
+        let container = &mut *container;
+        let mut section = container.get_mut(bpx::Handle::from_raw(handle));
+        let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
+        let slice = std::slice::from_raw_parts(buffer, size);
+        unwrap_or_err!(data.write(slice).map_err(|_| ERR_SECTION_IO));
+        ERR_NONE
+    }
 
-#[no_mangle]
-pub unsafe fn bpx_section_flush(container: *mut Container, handle: Handle) -> c_uint
-{
-    let container = &mut *container;
-    let mut section = container.get_mut(bpx::Handle::from_raw(handle));
-    let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
-    unwrap_or_err!(data.flush().map_err(|_| ERR_SECTION_IO));
-    ERR_NONE
+    fn bpx_section_flush(container: *mut Container, handle: Handle) -> c_uint
+    {
+        let container = &mut *container;
+        let mut section = container.get_mut(bpx::Handle::from_raw(handle));
+        let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
+        unwrap_or_err!(data.flush().map_err(|_| ERR_SECTION_IO));
+        ERR_NONE
+    }
 }

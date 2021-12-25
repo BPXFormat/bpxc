@@ -34,7 +34,7 @@ pub const ERR_NONE: c_uint = 0x0;
 
 // Local errors
 #[cfg(windows)]
-pub const ERR_INVALID_PATH: c_uint = 0x1;
+pub const ERR_INVALID_PATH: c_int = 0x1;
 pub const ERR_FILE_OPEN: c_uint = 0x2;
 pub const ERR_FILE_CREATE: c_uint = 0x3;
 pub const ERR_SECTION_IO: c_uint = 0x4;
