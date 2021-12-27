@@ -26,36 +26,40 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef BPX_CONTAINER_H
-#define BPX_CONTAINER_H
+#ifndef BPX_OPEN_H
+#define BPX_OPEN_H
 
-#include "bpx/header.h"
+#include "bpx/common.h"
 
-#include <stdbool.h>
 #include <stdlib.h>
 
-typedef struct bpx_section_options_s
+typedef struct bpx_container_options_s
 {
-    bpx_u32_t size;
     bpx_u8_t ty;
-    bpx_u8_t flags;
-    bpx_u32_t threshold;
-} bpx_section_options_t;
+    bpx_u32_t version;
+    bpx_u8_t type_ext[16];
+} bpx_container_options_t;
 
-#define BPX_COMPRESSION_ZLIB 0x1
-#define BPX_COMPRESSION_XZ 0x2
-#define BPX_COMPRESSION_THRESHOLD 0x10
-#define BPX_CHECKSUM_WEAK 0x4
-#define BPX_CHECKSUM_CRC32 0x8
+typedef enum bpx_seek_from_e
+{
+    BPX_SEEK_START,
+    BPX_SEEK_END,
+    BPX_SEEK_CURRENT
+} bpx_seek_from_t;
 
-void bpx_container_get_main_header(const bpx_container_t *container, bpx_main_header_t *main_header);
-void bpx_container_list_sections(const bpx_container_t *container, bpx_handle_t *out, size_t size);
-bool bpx_container_find_section_by_type(const bpx_container_t *container, bpx_u8_t ty, bpx_handle_t *handle);
-bool bpx_container_find_section_by_index(const bpx_container_t *container, bpx_u32_t idx, bpx_handle_t *handle);
-void bpx_container_create_section(bpx_container_t *container, const bpx_section_options_t *options);
+typedef struct bpx_container_io_s
+{
+    const void *userdata;
+    //Return true for success, false otherwise
+    /*@NotNull*/ bpx_error_t (*seek) (const void *userdata, bpx_seek_from_t from, bpx_u64_t pos, bpx_u64_t *new_pos);
+    /*@NotNull*/ bpx_error_t (*read) (const void *userdata, bpx_u8_t *buffer, size_t size, size_t *bytes_read);
+    bpx_error_t (*write) (const void *userdata, const bpx_u8_t *buffer, size_t size, size_t *bytes_written);
+    bpx_error_t (*flush) (const void *userdata);
+} bpx_container_io_t;
 
-bpx_error_t bpx_container_save(bpx_container_t *container);
-
-void bpx_container_close(bpx_container_t **container);
+bpx_error_t bpx_container_open(const char *file, bpx_container_t **out);
+bpx_error_t bpx_container_open2(bpx_container_io_t io, bpx_container_t **out);
+bpx_error_t bpx_container_create(const char *file, const bpx_container_options_t *header, bpx_container_t **out);
+bpx_error_t bpx_container_create2(bpx_container_io_t io, const bpx_container_options_t *header, bpx_container_t **out);
 
 #endif

@@ -1,3 +1,4 @@
+#include <bpx/open.h>
 #include <bpx/container.h>
 #include <bpx/section.h>
 #include <bpx/error_codes.h>
@@ -12,7 +13,7 @@ static void print_main_header(const bpx_container_t *container)
     printf("-- BPX main header --\n");
     printf("%.3s Type %c, version: %d\n", header.signature, header.ty, header.version);
     printf("Header checksum: %d\n", header.chksum);
-    printf("File size: %ld\n", header.file_size);
+    printf("File size: %llu\n", header.file_size);
     printf("Number of sections: %d\n", header.section_num);
     printf("-- END --\n");
 }
