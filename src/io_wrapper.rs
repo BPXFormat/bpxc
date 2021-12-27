@@ -59,6 +59,14 @@ pub struct IoWrapper
 
 impl IoWrapper
 {
+    pub fn new(raw: ContainerIo) -> IoWrapper
+    {
+        IoWrapper {
+            raw,
+            last_error: 0
+        }
+    }
+
     fn handle_low_level_err(&mut self, res: c_uint, count: usize) -> std::io::Result<usize>
     {
         if res == ERR_NONE {
