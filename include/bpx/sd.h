@@ -83,6 +83,7 @@ typedef struct bpx_sd_object_entry_s {
 
 bpx_error_t bpx_sd_value_decode_section(bpx_section_t section, bpx_sd_value_t *out);
 bpx_error_t bpx_sd_value_decode_memory(const bpx_u8_t *buffer, bpx_size_t size, bpx_sd_value_t *out);
+bpx_error_t bpx_sd_value_encode(bpx_section_t section, const bpx_sd_value_t *value);
 
 bpx_sd_value_t bpx_sd_value_new();
 bpx_sd_value_t bpx_sd_value_new_bool(bool value);

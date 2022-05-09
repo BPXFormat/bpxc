@@ -117,6 +117,31 @@ impl Value {
         }
     }
 
+    pub unsafe fn into_value(self) -> bpx::sd::Value {
+        match self.ty {
+            ValueType::Null => bpx::sd::Value::Null,
+            ValueType::Bool => self.data.assume_init().as_bool.into(),
+            ValueType::Uint8 => self.data.assume_init().as_u8.into(),
+            ValueType::Uint16 => self.data.assume_init().as_u16.into(),
+            ValueType::Uint32 => self.data.assume_init().as_u32.into(),
+            ValueType::Uint64 => self.data.assume_init().as_u64.into(),
+            ValueType::Int8 => self.data.assume_init().as_i8.into(),
+            ValueType::Int16 => self.data.assume_init().as_i16.into(),
+            ValueType::Int32 => self.data.assume_init().as_i32.into(),
+            ValueType::Int64 => self.data.assume_init().as_i64.into(),
+            ValueType::Float => self.data.assume_init().as_float.into(),
+            ValueType::Double => self.data.assume_init().as_double.into(),
+            ValueType::String => {
+                let len = libc::strlen(self.data.assume_init().as_string);
+                let slice = std::slice::from_raw_parts(self.data.assume_init().as_string as _, len);
+                let s = String::from(std::str::from_utf8_unchecked(slice));
+                s.into()
+            }
+            ValueType::Array => (*self.data.assume_init().as_array).to_array().into(),
+            ValueType::Object => (*self.data.assume_init().as_object).to_object().into()
+        }
+    }
+
     pub fn null() -> Self {
         Value {
             ty: ValueType::Null,
@@ -135,7 +160,7 @@ impl Value {
                 self.data.assume_init_mut().as_object = std::ptr::null_mut(); //Reset user pointer
             },
             ValueType::String => {
-                let host = CString::from_raw(std::mem::transmute(self.data.assume_init_mut().as_string));
+                let host = CString::from_raw(self.data.assume_init_mut().as_string as _);
                 drop(host); //Force deallocate string
                 self.data.assume_init_mut().as_string = std::ptr::null_mut(); //Reset user pointer
             },

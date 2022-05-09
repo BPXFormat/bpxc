@@ -29,6 +29,7 @@
 use std::collections::HashMap;
 use std::mem::MaybeUninit;
 use std::os::raw::c_char;
+use bpx::utils::Name;
 use crate::sd::value::Value;
 use crate::export;
 
@@ -62,6 +63,14 @@ impl ObjectWrapper {
             map.insert(k.into_inner(), Value::wrap(v.clone()));
         }
         Self(map)
+    }
+
+    pub unsafe fn to_object(&self) -> bpx::sd::Object {
+        let mut obj = bpx::sd::Object::with_capacity(self.0.len() as _);
+        for (k, v) in &self.0 {
+            obj.set(Name::from(*k), v.into_value());
+        }
+        obj
     }
 }
 

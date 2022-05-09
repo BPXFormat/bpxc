@@ -55,6 +55,14 @@ impl ArrayWrapper {
         }
         Self(lst)
     }
+
+    pub unsafe fn to_array(&self) -> bpx::sd::Array {
+        let mut arr = bpx::sd::Array::with_capacity(self.0.len() as _);
+        for v in &self.0 {
+            arr.as_mut().push(v.into_value())
+        }
+        arr
+    }
 }
 
 export!

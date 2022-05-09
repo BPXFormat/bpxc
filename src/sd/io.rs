@@ -49,4 +49,10 @@ export!
         out.write(Value::wrap(value));
         ERR_NONE
     }
+
+    fn bpx_sd_value_encode(section: *mut Section, value: *const Value) -> c_uint
+    {
+        let value = (*value).into_value();
+        value.write(&mut **section).map(|_| ERR_NONE).unwrap_or_else(|v| v.cerr_code())
+    }
 }
