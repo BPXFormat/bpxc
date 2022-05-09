@@ -36,8 +36,14 @@ typedef void* bpx_section_t;
 #include <stdlib.h>
 
 typedef uint8_t bpx_u8_t;
+typedef uint16_t bpx_u16_t;
 typedef uint32_t bpx_u32_t;
 typedef uint64_t bpx_u64_t;
+
+typedef int8_t bpx_i8_t;
+typedef int16_t bpx_i16_t;
+typedef int32_t bpx_i32_t;
+typedef int64_t bpx_i64_t;
 
 typedef bpx_u32_t bpx_handle_t;
 
