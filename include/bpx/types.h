@@ -1,4 +1,4 @@
-// Copyright (c) 2021, BlockProject 3D
+// Copyright (c) 2022, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -26,25 +26,44 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#[repr(C)]
-pub struct SectionHeader
-{
-    pub pointer: u64,
-    pub csize: u32,
-    pub size: u32,
-    pub chksum: u32,
-    pub ty: u8,
-    pub flags: u8
-}
+#ifndef BPX_TYPES_H
+#define BPX_TYPES_H
 
-#[repr(C)]
-pub struct MainHeader
+typedef void* bpx_container_t;
+typedef void* bpx_section_t;
+
+#include <stdint.h>
+#include <stdlib.h>
+
+typedef uint8_t bpx_u8_t;
+typedef uint32_t bpx_u32_t;
+typedef uint64_t bpx_u64_t;
+
+typedef bpx_u32_t bpx_handle_t;
+
+typedef size_t bpx_size_t;
+
+typedef unsigned int bpx_error_t;
+
+typedef struct bpx_main_header_s
 {
-    pub signature: [u8; 3],
-    pub ty: u8,
-    pub chksum: u32,
-    pub file_size: u64,
-    pub section_num: u32,
-    pub version: u32,
-    pub type_ext: [u8; 16]
-}
+    bpx_u8_t signature[3];
+    bpx_u8_t ty;
+    bpx_u32_t chksum;
+    bpx_u64_t file_size;
+    bpx_u32_t section_num;
+    bpx_u32_t version;
+    bpx_u8_t type_ext[16];
+} bpx_main_header_t;
+
+typedef struct bpx_section_header_s
+{
+    bpx_u64_t pointer;
+    bpx_u32_t csize;
+    bpx_u32_t size;
+    bpx_u32_t chksum;
+    bpx_u8_t ty;
+    bpx_u8_t flags;
+} bpx_section_header_t;
+
+#endif

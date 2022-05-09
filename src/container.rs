@@ -1,4 +1,4 @@
-// Copyright (c) 2021, BlockProject 3D
+// Copyright (c) 2022, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -28,17 +28,11 @@
 
 use std::os::raw::c_uint;
 use bpx::core::builder::{Checksum, CompressionMethod, SectionHeaderBuilder};
-use crate::{Container, Handle};
+use crate::types::{Container, Handle};
 use crate::error_codes::unwrap_or_err;
 use crate::error_codes::{CErrCode, ERR_NONE};
-use crate::header::MainHeader;
+use crate::types::MainHeader;
 use crate::export;
-
-pub const COMPRESSION_ZLIB: u8 = 0x1;
-pub const COMPRESSION_XZ: u8 = 0x2;
-pub const CHECKSUM_WEAK: u8 = 0x4;
-pub const CHECKSUM_CRC32: u8 = 0x8;
-pub const COMPRESSION_THRESHOLD: u8 = 0x10;
 
 #[repr(C)]
 pub struct SectionOptions
@@ -49,6 +43,12 @@ pub struct SectionOptions
     pub threshold: u32
 }
 
+pub const COMPRESSION_ZLIB: u8 = 0x1;
+pub const COMPRESSION_XZ: u8 = 0x2;
+pub const CHECKSUM_WEAK: u8 = 0x4;
+pub const CHECKSUM_CRC32: u8 = 0x8;
+pub const COMPRESSION_THRESHOLD: u8 = 0x10;
+
 export!
 {
     fn bpx_container_get_main_header(container: *const Container, main_header: *mut MainHeader)
@@ -57,7 +57,7 @@ export!
         let main_header = &mut *main_header;
         main_header.section_num = container.get_main_header().section_num;
         main_header.version = container.get_main_header().version;
-        main_header.ty = container.get_main_header().btype;
+        main_header.ty = container.get_main_header().ty;
         main_header.chksum = container.get_main_header().chksum;
         main_header.signature = container.get_main_header().signature;
         main_header.type_ext = container.get_main_header().type_ext;
@@ -67,7 +67,7 @@ export!
     fn bpx_container_list_sections(container: *const Container, out: *mut Handle, size: usize)
     {
         let container = &*container;
-        container.iter().map(|v| v.handle().into_raw()).take(size).enumerate().for_each(|(i, v)| {
+        container.sections().iter().map(|v| v.into_raw()).take(size).enumerate().for_each(|(i, v)| {
             std::ptr::write(out.add(i), v);
         });
     }
@@ -75,7 +75,7 @@ export!
     fn bpx_container_find_section_by_type(container: *const Container, ty: u8, handle: *mut Handle) -> bool
     {
         let container = &*container;
-        if let Some(v) = container.find_section_by_type(ty) {
+        if let Some(v) = container.sections().find_by_type(ty) {
             *handle = v.into_raw();
             true
         } else {
@@ -86,7 +86,7 @@ export!
     fn bpx_container_find_section_by_index(container: *const Container, idx: u32, handle: *mut Handle) -> bool
     {
         let container = &*container;
-        if let Some(v) = container.find_section_by_index(idx) {
+        if let Some(v) = container.sections().find_by_index(idx) {
             *handle = v.into_raw();
             true
         } else {
@@ -99,23 +99,23 @@ export!
         let container = &mut *container;
         let options = &*options;
         let mut builder = SectionHeaderBuilder::new();
-        builder.with_type(options.ty).with_size(options.size);
+        builder.ty(options.ty).size(options.size);
         if options.flags & CHECKSUM_CRC32 != 0 {
-            builder.with_checksum(Checksum::Crc32);
+            builder.checksum(Checksum::Crc32);
         }
         if options.flags & CHECKSUM_WEAK != 0 {
-            builder.with_checksum(Checksum::Weak);
+            builder.checksum(Checksum::Weak);
         }
         if options.flags & COMPRESSION_ZLIB != 0 {
-            builder.with_compression(CompressionMethod::Zlib);
+            builder.compression(CompressionMethod::Zlib);
         }
         if options.flags & COMPRESSION_XZ != 0 {
-            builder.with_compression(CompressionMethod::Xz);
+            builder.compression(CompressionMethod::Xz);
         }
         if options.flags & COMPRESSION_THRESHOLD != 0 {
-            builder.with_threshold(options.threshold);
+            builder.threshold(options.threshold);
         }
-        container.create_section(builder).into_raw()
+        container.sections_mut().create(builder).into_raw()
     }
 
     fn bpx_container_save(container: *mut Container) -> c_uint
@@ -128,7 +128,7 @@ export!
     fn bpx_container_close(container: *mut *mut Container)
     {
         let b = Box::from_raw(*container);
-        std::mem::drop(b); // deallocate the bpx container
+        drop(b); // deallocate the bpx container
         std::ptr::write(container, std::ptr::null_mut()); // reset user pointer to NULL
     }
 }

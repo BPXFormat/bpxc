@@ -1,4 +1,4 @@
-// Copyright (c) 2021, BlockProject 3D
+// Copyright (c) 2022, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -29,14 +29,15 @@
 #ifndef BPX_SECTION_H
 #define BPX_SECTION_H
 
-#include "bpx/header.h"
+#include "bpx/types.h"
 
-#include <stdlib.h>
-
-void bpx_section_get_header(const bpx_container_t *container, bpx_handle_t handle, bpx_section_header_t *section_header);
-bpx_error_t bpx_section_read(bpx_container_t *container, bpx_handle_t handle, bpx_u8_t *buffer, size_t size);
-bpx_error_t bpx_section_seek(bpx_container_t *container, bpx_handle_t handle, bpx_u64_t pos);
-bpx_error_t bpx_section_write(bpx_container_t *container, bpx_handle_t handle, const bpx_u8_t *buffer, size_t size);
-bpx_error_t bpx_section_flush(bpx_container_t *container, bpx_handle_t handle);
+void bpx_section_get_header(bpx_container_t container, bpx_handle_t handle, bpx_section_header_t *section_header);
+bpx_error_t bpx_section_open(bpx_container_t container, bpx_handle_t handle, bpx_section_t *out);
+bpx_error_t bpx_section_load(bpx_container_t container, bpx_handle_t handle, bpx_section_t *out);
+bpx_size_t bpx_section_read(bpx_section_t section, bpx_u8_t *buffer, bpx_size_t size);
+bpx_size_t bpx_section_write(bpx_section_t section, const bpx_u8_t *buffer, bpx_size_t size);
+bpx_u64_t bpx_section_seek(bpx_section_t section, bpx_u64_t pos);
+int bpx_section_flush(bpx_section_t section);
+void bpx_section_close(bpx_section_t *section);
 
 #endif

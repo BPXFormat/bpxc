@@ -1,4 +1,4 @@
-// Copyright (c) 2021, BlockProject 3D
+// Copyright (c) 2022, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -29,10 +29,9 @@
 #ifndef BPX_CONTAINER_H
 #define BPX_CONTAINER_H
 
-#include "bpx/header.h"
+#include "bpx/types.h"
 
 #include <stdbool.h>
-#include <stdlib.h>
 
 typedef struct bpx_section_options_s
 {
@@ -48,14 +47,14 @@ typedef struct bpx_section_options_s
 #define BPX_CHECKSUM_WEAK 0x4
 #define BPX_CHECKSUM_CRC32 0x8
 
-void bpx_container_get_main_header(const bpx_container_t *container, bpx_main_header_t *main_header);
-void bpx_container_list_sections(const bpx_container_t *container, bpx_handle_t *out, size_t size);
-bool bpx_container_find_section_by_type(const bpx_container_t *container, bpx_u8_t ty, bpx_handle_t *handle);
-bool bpx_container_find_section_by_index(const bpx_container_t *container, bpx_u32_t idx, bpx_handle_t *handle);
-void bpx_container_create_section(bpx_container_t *container, const bpx_section_options_t *options);
+void bpx_container_get_main_header(bpx_container_t container, bpx_main_header_t *main_header);
+void bpx_container_list_sections(bpx_container_t container, bpx_handle_t *out, size_t size);
+bool bpx_container_find_section_by_type(bpx_container_t container, bpx_u8_t ty, bpx_handle_t *handle);
+bool bpx_container_find_section_by_index(bpx_container_t container, bpx_u32_t idx, bpx_handle_t *handle);
+void bpx_container_create_section(bpx_container_t container, const bpx_section_options_t *options);
 
-bpx_error_t bpx_container_save(bpx_container_t *container);
+bpx_error_t bpx_container_save(bpx_container_t container);
 
-void bpx_container_close(bpx_container_t **container);
+void bpx_container_close(bpx_container_t *container);
 
 #endif

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, BlockProject 3D
+// Copyright (c) 2022, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -29,7 +29,7 @@
 use std::ffi::c_void;
 use std::io::{Error, ErrorKind, Read, Seek, Write};
 use std::os::raw::c_uint;
-use crate::error_codes::{ERR_CORE_IO, ERR_NONE, ERR_SECTION_IO};
+use crate::error_codes::{ERR_CORE_IO, ERR_NONE};
 use crate::callback;
 
 #[repr(C)]
@@ -71,7 +71,7 @@ impl IoWrapper
     {
         if res == ERR_NONE {
             Ok(count)
-        } else if res == ERR_CORE_IO || res == ERR_SECTION_IO {
+        } else if res == ERR_CORE_IO {
             Err(Error::last_os_error())
         } else {
             self.last_error = res;

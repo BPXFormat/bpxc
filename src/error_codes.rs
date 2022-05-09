@@ -1,4 +1,4 @@
-// Copyright (c) 2021, BlockProject 3D
+// Copyright (c) 2022, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::os::raw::c_uint;
-use bpx::core::error::{ReadError, WriteError};
+use bpx::core::error::{DeflateError, Error, InflateError, OpenError};
 
 // No error
 pub const ERR_NONE: c_uint = 0x0;
@@ -37,46 +37,83 @@ pub const ERR_NONE: c_uint = 0x0;
 pub const ERR_INVALID_PATH: c_int = 0x1;
 pub const ERR_FILE_OPEN: c_uint = 0x2;
 pub const ERR_FILE_CREATE: c_uint = 0x3;
-pub const ERR_SECTION_IO: c_uint = 0x4;
 
 // BPX errors
 pub const ERR_CORE_CHKSUM: c_uint = 0x5;
 pub const ERR_CORE_IO: c_uint = 0x6;
 pub const ERR_CORE_BAD_VERSION: c_uint = 0x7;
 pub const ERR_CORE_BAD_SIGNATURE: c_uint = 0x8;
-pub const ERR_CORE_INFLATE: c_uint = 0x9;
-pub const ERR_CORE_DEFLATE: c_uint = 0xA;
-pub const ERR_CORE_SECTION_NOT_LOADED: c_uint = 0xB;
 pub const ERR_CORE_CAPACITY: c_uint = 0xC;
+
+// Inflate errors
+pub const ERR_INFLATE_MEMORY: c_uint = 0xD;
+pub const ERR_INFLATE_UNSUPPORTED: c_uint = 0xE;
+pub const ERR_INFLATE_DATA: c_uint = 0xF;
+pub const ERR_INFLATE_UNKNOWN: c_uint = 0x10;
+pub const ERR_INFLATE_IO: c_uint = 0x11;
+
+// Deflate errors
+pub const ERR_DEFLATE_MEMORY: c_uint = 0x12;
+pub const ERR_DEFLATE_UNSUPPORTED: c_uint = 0x13;
+pub const ERR_DEFLATE_DATA: c_uint = 0x14;
+pub const ERR_DEFLATE_UNKNOWN: c_uint = 0x15;
+pub const ERR_DEFLATE_IO: c_uint = 0x16;
+
+// Open errors
+pub const ERR_OPEN_SECTION_IN_USE: c_uint = 0x17;
+pub const ERR_OPEN_SECTION_NOT_LOADED: c_uint = 0x18;
 
 pub trait CErrCode
 {
     fn cerr_code(&self) -> u32;
 }
 
-impl CErrCode for bpx::core::error::ReadError
-{
-    fn cerr_code(&self) -> u32
-    {
+impl CErrCode for bpx::core::error::OpenError {
+    fn cerr_code(&self) -> u32 {
         match self {
-            ReadError::Checksum(_, _) => ERR_CORE_CHKSUM,
-            ReadError::Io(_) => ERR_CORE_IO,
-            ReadError::BadVersion(_) => ERR_CORE_BAD_VERSION,
-            ReadError::BadSignature(_) => ERR_CORE_BAD_SIGNATURE,
-            ReadError::Inflate(_) => ERR_CORE_INFLATE
+            OpenError::SectionInUse => ERR_OPEN_SECTION_IN_USE,
+            OpenError::SectionNotLoaded => ERR_OPEN_SECTION_NOT_LOADED
         }
     }
 }
 
-impl CErrCode for bpx::core::error::WriteError
+impl CErrCode for bpx::core::error::InflateError {
+    fn cerr_code(&self) -> u32 {
+        match self {
+            InflateError::Memory => ERR_INFLATE_MEMORY,
+            InflateError::Unsupported(_) => ERR_INFLATE_UNSUPPORTED,
+            InflateError::Data => ERR_INFLATE_DATA,
+            InflateError::Unknown => ERR_INFLATE_UNKNOWN,
+            InflateError::Io(_) => ERR_INFLATE_IO
+        }
+    }
+}
+
+impl CErrCode for bpx::core::error::DeflateError {
+    fn cerr_code(&self) -> u32 {
+        match self {
+            DeflateError::Memory => ERR_DEFLATE_MEMORY,
+            DeflateError::Unsupported(_) => ERR_DEFLATE_UNSUPPORTED,
+            DeflateError::Data => ERR_DEFLATE_DATA,
+            DeflateError::Unknown => ERR_DEFLATE_UNKNOWN,
+            DeflateError::Io(_) => ERR_DEFLATE_IO
+        }
+    }
+}
+
+impl CErrCode for bpx::core::error::Error
 {
     fn cerr_code(&self) -> u32
     {
         match self {
-            WriteError::Io(_) => ERR_CORE_IO,
-            WriteError::Capacity(_) => ERR_CORE_CAPACITY,
-            WriteError::Deflate(_) => ERR_CORE_DEFLATE,
-            WriteError::SectionNotLoaded => ERR_CORE_SECTION_NOT_LOADED
+            Error::Checksum {..} => ERR_CORE_CHKSUM,
+            Error::Io(_) => ERR_CORE_IO,
+            Error::BadVersion(_) => ERR_CORE_BAD_VERSION,
+            Error::BadSignature(_) => ERR_CORE_BAD_SIGNATURE,
+            Error::Inflate(e) => e.cerr_code(),
+            Error::Capacity(_) => ERR_CORE_CAPACITY,
+            Error::Deflate(e) => e.cerr_code(),
+            Error::Open(e) => e.cerr_code()
         }
     }
 }

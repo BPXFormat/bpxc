@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-static void print_main_header(const bpx_container_t *container)
+static void print_main_header(bpx_container_t container)
 {
     bpx_main_header_t header;
     bpx_container_get_main_header(container, &header);
@@ -22,7 +22,7 @@ int main(int ac, const char **av)
 {
     if (ac != 2)
         return 1;
-    bpx_container_t *container;
+    bpx_container_t container;
     bpx_error_t err = bpx_container_open(av[1], &container);
     if (err != BPX_ERR_NONE)
     {

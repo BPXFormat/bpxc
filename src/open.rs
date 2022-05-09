@@ -1,4 +1,4 @@
-// Copyright (c) 2021, BlockProject 3D
+// Copyright (c) 2022, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -34,7 +34,7 @@ use crate::error_codes::CErrCode;
 use crate::error_codes::ERR_FILE_CREATE;
 use crate::error_codes::ERR_FILE_OPEN;
 use crate::path_utils::cstr_to_path;
-use crate::Container;
+use crate::types::Container;
 use crate::error_codes::ERR_NONE;
 use crate::error_codes::unwrap_or_err;
 use crate::export;
@@ -68,9 +68,9 @@ export!
         let f = unwrap_or_err!(File::create(path).map_err(|_| ERR_FILE_CREATE));
         let h = &*header;
         let container = bpx::core::Container::create(ContainerWrapper::from(f), MainHeaderBuilder::new()
-            .with_type(h.ty)
-            .with_type_ext(h.type_ext)
-            .with_version(h.version));
+            .ty(h.ty)
+            .type_ext(h.type_ext)
+            .version(h.version));
         let host = Box::new(container);
         *out = Box::into_raw(host);
         ERR_NONE
@@ -90,9 +90,9 @@ export!
         let h = &*header;
         let wrapper = ContainerWrapper::from(IoWrapper::new(io));
         let container = bpx::core::Container::create(wrapper, MainHeaderBuilder::new()
-            .with_type(h.ty)
-            .with_type_ext(h.type_ext)
-            .with_version(h.version));
+            .ty(h.ty)
+            .type_ext(h.type_ext)
+            .version(h.version));
         let host = Box::new(container);
         *out = Box::into_raw(host);
         ERR_NONE

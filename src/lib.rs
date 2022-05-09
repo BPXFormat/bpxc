@@ -1,4 +1,4 @@
-// Copyright (c) 2021, BlockProject 3D
+// Copyright (c) 2022, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -31,14 +31,10 @@ pub mod section;
 
 mod path_utils;
 mod error_codes;
-mod header;
+mod types;
 mod open;
 mod io_wrapper;
 mod container_wrapper;
-
-pub type Container = bpx::core::Container<container_wrapper::ContainerWrapper>;
-
-pub type Handle = u32;
 
 macro_rules! callback {
     (($($name: ident: $t: ty),*) $(-> $t1: ty)?) => {

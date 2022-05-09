@@ -1,4 +1,4 @@
-// Copyright (c) 2021, BlockProject 3D
+// Copyright (c) 2022, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -26,20 +26,33 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef BPX_COMMON_H
-#define BPX_COMMON_H
+use crate::container_wrapper::ContainerWrapper;
 
-struct bpx_container_s;
-typedef struct bpx_container_s bpx_container_t;
+pub type Handle = u32;
 
-#include <stdint.h>
+pub type Container = bpx::core::Container<ContainerWrapper>;
 
-typedef uint8_t bpx_u8_t;
-typedef uint32_t bpx_u32_t;
-typedef uint64_t bpx_u64_t;
+pub type Section = std::cell::RefMut<'static, bpx::core::AutoSectionData>;
 
-typedef bpx_u32_t bpx_handle_t;
+#[repr(C)]
+pub struct SectionHeader
+{
+    pub pointer: u64,
+    pub csize: u32,
+    pub size: u32,
+    pub chksum: u32,
+    pub ty: u8,
+    pub flags: u8
+}
 
-typedef unsigned int bpx_error_t;
-
-#endif
+#[repr(C)]
+pub struct MainHeader
+{
+    pub signature: [u8; 3],
+    pub ty: u8,
+    pub chksum: u32,
+    pub file_size: u64,
+    pub section_num: u32,
+    pub version: u32,
+    pub type_ext: [u8; 16]
+}

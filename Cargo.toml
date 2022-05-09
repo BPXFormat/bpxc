@@ -9,4 +9,4 @@ edition = "2021"
 crate-type = ["staticlib"]
 
 [dependencies]
-bpx = "4.0.0-preview2"
+bpx = "4.0.0-beta-7.2.2"

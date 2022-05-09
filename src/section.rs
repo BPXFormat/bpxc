@@ -1,4 +1,4 @@
-// Copyright (c) 2021, BlockProject 3D
+// Copyright (c) 2022, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -27,65 +27,75 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::io::{Read, SeekFrom, Seek, Write};
-use std::os::raw::c_uint;
-use crate::{Container, Handle};
+use std::os::raw::{c_int, c_uint};
+use crate::types::{Container, Handle, Section};
 use crate::error_codes::unwrap_or_err;
-use crate::error_codes::{CErrCode, ERR_NONE, ERR_SECTION_IO};
-use crate::header::SectionHeader;
+use crate::error_codes::{CErrCode, ERR_NONE};
+use crate::types::SectionHeader;
 use crate::export;
 
-export!
-{
+export! {
     fn bpx_section_get_header(container: *const Container, handle: Handle, section_header: *mut SectionHeader)
     {
         let container = &*container;
         let section_header = &mut *section_header;
-        let section = container.get(bpx::Handle::from_raw(handle));
+        let section = container.sections().header(bpx::core::Handle::from_raw(handle));
         section_header.size = section.size;
         section_header.chksum = section.chksum;
         section_header.csize = section.csize;
         section_header.flags = section.flags;
-        section_header.ty = section.btype;
+        section_header.ty = section.ty;
         section_header.pointer = section.pointer;
     }
 
-    fn bpx_section_read(container: *mut Container, handle: Handle, buffer: *mut u8, size: usize) -> c_uint
+    fn bpx_section_load(container: *const Container, handle: Handle, out: *mut *const Section) -> c_uint
     {
-        let container = &mut *container;
-        let mut section = container.get_mut(bpx::Handle::from_raw(handle));
-        let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
-        std::ptr::write_bytes(buffer, 0, size); //This allows us to initialize the buffer in preparation of std::io::Read call
-        let slice = std::slice::from_raw_parts_mut(buffer, size);
-        unwrap_or_err!(data.read(slice).map_err(|_| ERR_SECTION_IO));
+        let container = &*container;
+        let section = unwrap_or_err!(container.sections().load(bpx::core::Handle::from_raw(handle)).map_err(|e| e.cerr_code()));
+        let host = Box::new(section);
+        *out = Box::into_raw(host);
         ERR_NONE
     }
 
-    fn bpx_section_seek(container: *mut Container, handle: Handle, pos: u64) -> c_uint
+    fn bpx_section_open(container: *const Container, handle: Handle, out: *mut *const Section) -> c_uint
     {
-        let container = &mut *container;
-        let mut section = container.get_mut(bpx::Handle::from_raw(handle));
-        let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
-        unwrap_or_err!(data.seek(SeekFrom::Start(pos)).map_err(|_| ERR_SECTION_IO));
+        let container = &*container;
+        let section = unwrap_or_err!(container.sections().open(bpx::core::Handle::from_raw(handle)).map_err(|e| e.cerr_code()));
+        let host = Box::new(section);
+        *out = Box::into_raw(host);
         ERR_NONE
+    }
+
+    fn bpx_section_read(section: *mut Section, buffer: *mut u8, size: usize) -> usize {
+        let section = &mut *section;
+        std::ptr::write_bytes(buffer, 0, size); //This allows us to initialize the buffer in preparation of std::io::Read call
+        let slice = std::slice::from_raw_parts_mut(buffer, size);
+        section.read(slice).unwrap_or(usize::MAX)
     }
 
     //SAFETY: make sure buffer is initialized otherwise UB!
-    fn bpx_section_write(container: *mut Container, handle: Handle, buffer: *const u8, size: usize) -> c_uint
-    {
-        let container = &mut *container;
-        let mut section = container.get_mut(bpx::Handle::from_raw(handle));
-        let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
+    fn bpx_section_write(section: *mut Section, buffer: *const u8, size: usize) -> usize {
+        let section = &mut *section;
         let slice = std::slice::from_raw_parts(buffer, size);
-        unwrap_or_err!(data.write(slice).map_err(|_| ERR_SECTION_IO));
-        ERR_NONE
+        section.write(slice).unwrap_or(usize::MAX)
     }
 
-    fn bpx_section_flush(container: *mut Container, handle: Handle) -> c_uint
+    fn bpx_section_seek(section: *mut Section, pos: u64) -> u64
     {
-        let container = &mut *container;
-        let mut section = container.get_mut(bpx::Handle::from_raw(handle));
-        let data = unwrap_or_err!(section.load().map_err(|v| v.cerr_code()));
-        unwrap_or_err!(data.flush().map_err(|_| ERR_SECTION_IO));
-        ERR_NONE
+        let section = &mut *section;
+        section.seek(SeekFrom::Start(pos)).unwrap_or(u64::MAX)
+    }
+
+    fn bpx_section_flush(section: *mut Section) -> c_int
+    {
+        let section = &mut *section;
+        section.flush().map(|_| 0).unwrap_or(-1)
+    }
+
+    fn bpx_section_close(section: *mut *mut Section)
+    {
+        let b = Box::from_raw(*section);
+        drop(b); // deallocate the heap wrapper and unlock the RefMut
+        std::ptr::write(section, std::ptr::null_mut()); // reset user pointer to NULL
     }
 }
