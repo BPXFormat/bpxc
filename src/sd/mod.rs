@@ -26,37 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod container;
-pub mod section;
-
-mod path_utils;
-mod error_codes;
-mod types;
-mod open;
-mod io_wrapper;
-mod container_wrapper;
-mod sd;
-
-macro_rules! callback {
-    (($($name: ident: $t: ty),*) $(-> $t1: ty)?) => {
-        unsafe extern "C" fn ($($name: $t),*) $(-> $t1)?
-    };
-}
-
-pub(crate) use callback;
-
-macro_rules! export {
-    (
-        $(
-            fn $name: ident ($($pname: ident: $ptype: ty),*) $(-> $ret: ty)? $body: block
-        )*
-    ) => {
-        $(
-            #[no_mangle]
-            pub unsafe extern "C" fn $name ($($pname: $ptype),*) $(-> $ret)? $body
-        )*
-    };
-}
-
-pub(crate) use export;
-use crate::io_wrapper::IoWrapper;
+mod value;
+mod object;
+mod array;
+mod io;

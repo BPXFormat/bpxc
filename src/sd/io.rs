@@ -26,37 +26,27 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod container;
-pub mod section;
+use crate::error_codes::{CErrCode, ERR_NONE};
+use crate::error_codes::unwrap_or_err;
+use std::os::raw::c_uint;
+use crate::export;
+use crate::types::Section;
+use super::value::Value;
 
-mod path_utils;
-mod error_codes;
-mod types;
-mod open;
-mod io_wrapper;
-mod container_wrapper;
-mod sd;
+export!
+{
+    fn bpx_sd_value_decode_section(section: *mut Section, out: *mut Value) -> c_uint
+    {
+        let value = unwrap_or_err!(bpx::sd::Value::read(&mut **section).map_err(|v| v.cerr_code()));
+        out.write(Value::wrap(value));
+        ERR_NONE
+    }
 
-macro_rules! callback {
-    (($($name: ident: $t: ty),*) $(-> $t1: ty)?) => {
-        unsafe extern "C" fn ($($name: $t),*) $(-> $t1)?
-    };
+    fn bpx_sd_value_decode_memory(buffer: *const u8, size: usize, out: *mut Value) -> c_uint
+    {
+        let slice = std::slice::from_raw_parts(buffer, size);
+        let value = unwrap_or_err!(bpx::sd::Value::read(slice).map_err(|v| v.cerr_code()));
+        out.write(Value::wrap(value));
+        ERR_NONE
+    }
 }
-
-pub(crate) use callback;
-
-macro_rules! export {
-    (
-        $(
-            fn $name: ident ($($pname: ident: $ptype: ty),*) $(-> $ret: ty)? $body: block
-        )*
-    ) => {
-        $(
-            #[no_mangle]
-            pub unsafe extern "C" fn $name ($($pname: $ptype),*) $(-> $ret)? $body
-        )*
-    };
-}
-
-pub(crate) use export;
-use crate::io_wrapper::IoWrapper;
