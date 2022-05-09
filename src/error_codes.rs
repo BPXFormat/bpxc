@@ -63,6 +63,14 @@ pub const ERR_DEFLATE_IO: c_uint = 0x16;
 pub const ERR_OPEN_SECTION_IN_USE: c_uint = 0x17;
 pub const ERR_OPEN_SECTION_NOT_LOADED: c_uint = 0x18;
 
+// BPXSD errors
+pub const ERR_SD_IO: c_uint = 0x19;
+pub const ERR_SD_TRUNCATION: c_uint = 0x1A;
+pub const ERR_SD_BAD_TYPE_CODE: c_uint = 0x1B;
+pub const ERR_SD_UTF8: c_uint = 0x1C;
+pub const ERR_SD_CAPACITY_EXCEEDED: c_uint = 0x1D;
+pub const ERR_SD_NOT_AN_OBJECT: c_uint = 0x1E;
+
 pub trait CErrCode
 {
     fn cerr_code(&self) -> u32;
@@ -114,6 +122,19 @@ impl CErrCode for bpx::core::error::Error
             Error::Capacity(_) => ERR_CORE_CAPACITY,
             Error::Deflate(e) => e.cerr_code(),
             Error::Open(e) => e.cerr_code()
+        }
+    }
+}
+
+impl CErrCode for bpx::sd::error::Error {
+    fn cerr_code(&self) -> u32 {
+        match self {
+            bpx::sd::error::Error::Io(_) => ERR_SD_IO,
+            bpx::sd::error::Error::Truncation(_) => ERR_SD_TRUNCATION,
+            bpx::sd::error::Error::BadTypeCode(_) => ERR_SD_BAD_TYPE_CODE,
+            bpx::sd::error::Error::Utf8 => ERR_SD_UTF8,
+            bpx::sd::error::Error::CapacityExceeded(_) => ERR_SD_CAPACITY_EXCEEDED,
+            bpx::sd::error::Error::NotAnObject => ERR_SD_NOT_AN_OBJECT
         }
     }
 }
