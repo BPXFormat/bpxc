@@ -100,7 +100,7 @@ bpx_sd_value_t bpx_sd_value_new_double(double value);
 bpx_sd_value_t bpx_sd_value_new_string(const char *value);
 bpx_sd_value_t bpx_sd_value_new_array();
 bpx_sd_value_t bpx_sd_value_new_object();
-void bpx_sd_value_free(bpx_sd_value_t **value);
+void bpx_sd_value_free(bpx_sd_value_t *value);
 
 void bpx_sd_array_push(bpx_sd_array_t array, bpx_sd_value_t *value); //Takes ownership of value.
 void bpx_sd_array_insert(bpx_sd_array_t array, bpx_sd_value_t *value, bpx_size_t index); //Takes ownership of value.

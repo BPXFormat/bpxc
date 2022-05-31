@@ -101,19 +101,19 @@ impl Value {
         match value {
             bpx::sd::Value::Null => Self::null(),
             bpx::sd::Value::Bool(v) => Self::new(ValueType::Bool, ValueData { as_bool: v }),
-            bpx::sd::Value::Uint8(v) => Self::new(ValueType::Bool, ValueData { as_u8: v }),
-            bpx::sd::Value::Uint16(v) => Self::new(ValueType::Bool, ValueData { as_u16: v }),
-            bpx::sd::Value::Uint32(v) => Self::new(ValueType::Bool, ValueData { as_u32: v }),
-            bpx::sd::Value::Uint64(v) => Self::new(ValueType::Bool, ValueData { as_u64: v }),
-            bpx::sd::Value::Int8(v) => Self::new(ValueType::Bool, ValueData { as_i8: v }),
-            bpx::sd::Value::Int16(v) => Self::new(ValueType::Bool, ValueData { as_i16: v }),
-            bpx::sd::Value::Int32(v) => Self::new(ValueType::Bool, ValueData { as_i32: v }),
-            bpx::sd::Value::Int64(v) => Self::new(ValueType::Bool, ValueData { as_i64: v }),
-            bpx::sd::Value::Float(v) => Self::new(ValueType::Bool, ValueData { as_float: v }),
-            bpx::sd::Value::Double(v) => Self::new(ValueType::Bool, ValueData { as_double: v }),
-            bpx::sd::Value::String(v) => Self::new(ValueType::Bool, ValueData { as_string: CString::new(v).unwrap().into_raw() }),
-            bpx::sd::Value::Array(v) => Self::new(ValueType::Bool, ValueData { as_array: ArrayWrapper::wrap(v).into_raw() }),
-            bpx::sd::Value::Object(v) => Self::new(ValueType::Bool, ValueData { as_object: ObjectWrapper::wrap(v).into_raw() })
+            bpx::sd::Value::Uint8(v) => Self::new(ValueType::Uint8, ValueData { as_u8: v }),
+            bpx::sd::Value::Uint16(v) => Self::new(ValueType::Uint16, ValueData { as_u16: v }),
+            bpx::sd::Value::Uint32(v) => Self::new(ValueType::Uint32, ValueData { as_u32: v }),
+            bpx::sd::Value::Uint64(v) => Self::new(ValueType::Uint64, ValueData { as_u64: v }),
+            bpx::sd::Value::Int8(v) => Self::new(ValueType::Int8, ValueData { as_i8: v }),
+            bpx::sd::Value::Int16(v) => Self::new(ValueType::Int16, ValueData { as_i16: v }),
+            bpx::sd::Value::Int32(v) => Self::new(ValueType::Int32, ValueData { as_i32: v }),
+            bpx::sd::Value::Int64(v) => Self::new(ValueType::Int64, ValueData { as_i64: v }),
+            bpx::sd::Value::Float(v) => Self::new(ValueType::Float, ValueData { as_float: v }),
+            bpx::sd::Value::Double(v) => Self::new(ValueType::Double, ValueData { as_double: v }),
+            bpx::sd::Value::String(v) => Self::new(ValueType::String, ValueData { as_string: CString::new(v).unwrap().into_raw() }),
+            bpx::sd::Value::Array(v) => Self::new(ValueType::Array, ValueData { as_array: ArrayWrapper::wrap(v).into_raw() }),
+            bpx::sd::Value::Object(v) => Self::new(ValueType::Object, ValueData { as_object: ObjectWrapper::wrap(v).into_raw() })
         }
     }
 
