@@ -26,15 +26,14 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod container;
-pub mod section;
+use std::os::raw::c_char;
+use std::ffi::CStr;
+use crate::ffi_helper::export;
+use crate::error_codes::unwrap_or_err;
 
-mod path_utils;
-mod error_codes;
-mod types;
-mod open;
-mod io_wrapper;
-mod container_wrapper;
-mod sd;
-mod ffi_helper;
-mod utils;
+export! {
+    fn hash(str: *const c_char) -> u64 {
+        let str = unwrap_or_err!(CStr::from_ptr(str).to_str().map_err(|_| 0));
+        bpx::utils::hash(str)
+    }
+}

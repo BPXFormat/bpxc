@@ -26,15 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod container;
-pub mod section;
+#ifndef BPX_UTILS_H
+#define BPX_UTILS_H
 
-mod path_utils;
-mod error_codes;
-mod types;
-mod open;
-mod io_wrapper;
-mod container_wrapper;
-mod sd;
-mod ffi_helper;
-mod utils;
+#include "bpx/types.h"
+
+bpx_u64_t hash(const char *str);
+
+#endif
