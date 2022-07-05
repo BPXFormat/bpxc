@@ -38,6 +38,8 @@ use crate::types::Container;
 use crate::error_codes::ERR_NONE;
 use crate::error_codes::unwrap_or_err;
 use crate::ffi_helper::export;
+use crate::ffi_helper::Object;
+use crate::ffi_helper::OutCell;
 use crate::container_wrapper::ContainerWrapper;
 use crate::io_wrapper::ContainerIo;
 use crate::io_wrapper::IoWrapper;
@@ -52,17 +54,16 @@ pub struct ContainerOptions
 
 export!
 {
-    fn bpx_container_open(file: *const c_char, out: *mut *const Container) -> c_uint
+    fn bpx_container_open(file: *const c_char, out: OutCell<Object<Container>>) -> c_uint
     {
         let path = unwrap_or_err!(cstr_to_path(CStr::from_ptr(file)));
         let f = unwrap_or_err!(File::open(path).map_err(|_| ERR_FILE_OPEN));
         let container = unwrap_or_err!(bpx::core::Container::open(ContainerWrapper::from(f)).map_err(|e| e.cerr_code()));
-        let host = Box::new(container);
-        *out = Box::into_raw(host);
+        out.set(Object::new(container));
         ERR_NONE
     }
 
-    fn bpx_container_create(file: *const c_char, header: *const ContainerOptions, out: *mut *const Container) -> c_uint
+    fn bpx_container_create(file: *const c_char, header: *const ContainerOptions, out: OutCell<Object<Container>>) -> c_uint
     {
         let path = unwrap_or_err!(cstr_to_path(CStr::from_ptr(file)));
         let f = unwrap_or_err!(File::create(path).map_err(|_| ERR_FILE_CREATE));
@@ -71,21 +72,19 @@ export!
             .ty(h.ty)
             .type_ext(h.type_ext)
             .version(h.version));
-        let host = Box::new(container);
-        *out = Box::into_raw(host);
+        out.set(Object::new(container));
         ERR_NONE
     }
 
-    fn bpx_container_open2(io: ContainerIo, out: *mut *const Container) -> c_uint
+    fn bpx_container_open2(io: ContainerIo, out: OutCell<Object<Container>>) -> c_uint
     {
         let wrapper = ContainerWrapper::from(IoWrapper::new(io));
         let container = unwrap_or_err!(bpx::core::Container::open(wrapper).map_err(|e| e.cerr_code()));
-        let host = Box::new(container);
-        *out = Box::into_raw(host);
+        out.set(Object::new(container));
         ERR_NONE
     }
 
-    fn bpx_container_create2(io: ContainerIo, header: *const ContainerOptions, out: *mut *const Container) -> c_uint
+    fn bpx_container_create2(io: ContainerIo, header: *const ContainerOptions, out: OutCell<Object<Container>>) -> c_uint
     {
         let h = &*header;
         let wrapper = ContainerWrapper::from(IoWrapper::new(io));
@@ -93,8 +92,7 @@ export!
             .ty(h.ty)
             .type_ext(h.type_ext)
             .version(h.version));
-        let host = Box::new(container);
-        *out = Box::into_raw(host);
+        out.set(Object::new(container));
         ERR_NONE
     }
 }

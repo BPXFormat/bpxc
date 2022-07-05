@@ -72,10 +72,10 @@ macro_rules! export_object {
     (
         $obj: ty {
             $(
-                mut fn $mut_name: ident ($mut_self: ident $(, $($mut_pname: ident: $mut_ptype: ty),*)?) $(-> $mut_ret: ty)? $mut_body: block
+                fn $name: ident ($self: ident $(, $($pname: ident: $ptype: ty),*)?) $(-> $ret: ty)? $body: block
             )*
             $(
-                fn $name: ident ($self: ident $(, $($pname: ident: $ptype: ty),*)?) $(-> $ret: ty)? $body: block
+                mut fn $mut_name: ident ($mut_self: ident $(, $($mut_pname: ident: $mut_ptype: ty),*)?) $(-> $mut_ret: ty)? $mut_body: block
             )*
             $(close $closer_name: ident ($closer_self: ident) $closer_body: block)?
         }
