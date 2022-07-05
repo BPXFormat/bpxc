@@ -28,7 +28,7 @@
 
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom, Write};
-use crate::IoWrapper;
+use crate::io_wrapper::IoWrapper;
 
 pub enum ContainerWrapper
 {

@@ -36,27 +36,4 @@ mod open;
 mod io_wrapper;
 mod container_wrapper;
 mod sd;
-
-macro_rules! callback {
-    (($($name: ident: $t: ty),*) $(-> $t1: ty)?) => {
-        unsafe extern "C" fn ($($name: $t),*) $(-> $t1)?
-    };
-}
-
-pub(crate) use callback;
-
-macro_rules! export {
-    (
-        $(
-            fn $name: ident ($($pname: ident: $ptype: ty),*) $(-> $ret: ty)? $body: block
-        )*
-    ) => {
-        $(
-            #[no_mangle]
-            pub unsafe extern "C" fn $name ($($pname: $ptype),*) $(-> $ret)? $body
-        )*
-    };
-}
-
-pub(crate) use export;
-use crate::io_wrapper::IoWrapper;
+mod ffi_helper;

@@ -30,7 +30,7 @@ use std::ffi::c_void;
 use std::io::{Error, ErrorKind, Read, Seek, Write};
 use std::os::raw::c_uint;
 use crate::error_codes::{ERR_CORE_IO, ERR_NONE};
-use crate::callback;
+use crate::ffi_helper::callback;
 
 #[repr(C)]
 pub enum SeekFrom

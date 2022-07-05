@@ -28,7 +28,7 @@
 
 use std::mem::MaybeUninit;
 use crate::sd::value::Value;
-use crate::export;
+use crate::ffi_helper::export;
 
 pub struct ArrayWrapper(Vec<Value>);
 

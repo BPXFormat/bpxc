@@ -29,7 +29,7 @@
 use crate::error_codes::{CErrCode, ERR_NONE};
 use crate::error_codes::unwrap_or_err;
 use std::os::raw::c_uint;
-use crate::export;
+use crate::ffi_helper::export;
 use crate::types::Section;
 use super::value::Value;
 

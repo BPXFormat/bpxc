@@ -32,7 +32,7 @@ use crate::types::{Container, Handle};
 use crate::error_codes::unwrap_or_err;
 use crate::error_codes::{CErrCode, ERR_NONE};
 use crate::types::MainHeader;
-use crate::export;
+use crate::ffi_helper::export;
 
 #[repr(C)]
 pub struct SectionOptions

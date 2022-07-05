@@ -31,7 +31,7 @@ use std::mem::MaybeUninit;
 use std::os::raw::c_char;
 use bpx::utils::Name;
 use crate::sd::value::Value;
-use crate::export;
+use crate::ffi_helper::export;
 
 pub struct ObjectWrapper(HashMap<u64, Value>);
 

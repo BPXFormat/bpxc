@@ -37,7 +37,7 @@ use crate::path_utils::cstr_to_path;
 use crate::types::Container;
 use crate::error_codes::ERR_NONE;
 use crate::error_codes::unwrap_or_err;
-use crate::export;
+use crate::ffi_helper::export;
 use crate::container_wrapper::ContainerWrapper;
 use crate::io_wrapper::ContainerIo;
 use crate::io_wrapper::IoWrapper;

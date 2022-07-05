@@ -29,7 +29,7 @@
 use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
 use std::os::raw::c_char;
-use crate::export;
+use crate::ffi_helper::export;
 use crate::sd::array::ArrayWrapper;
 use crate::sd::object::ObjectWrapper;
 
