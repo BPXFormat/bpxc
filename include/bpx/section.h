@@ -31,13 +31,24 @@
 
 #include "bpx/types.h"
 
-void bpx_section_get_header(bpx_container_t container, bpx_handle_t handle, bpx_section_header_t *section_header);
+/* Open/close sections */
 bpx_error_t bpx_section_open(bpx_container_t container, bpx_handle_t handle, bpx_section_t *out);
 bpx_error_t bpx_section_load(bpx_container_t container, bpx_handle_t handle, bpx_section_t *out);
+void bpx_section_close(bpx_section_t *section);
+
+/* Immutable operations */
+void bpx_section_get_header(bpx_container_t container, bpx_handle_t handle, bpx_section_header_t *section_header);
+bpx_size_t bpx_section_size(bpx_section_t section);
+
+/* Raw IO */
 bpx_size_t bpx_section_read(bpx_section_t section, bpx_u8_t *buffer, bpx_size_t size);
 bpx_size_t bpx_section_write(bpx_section_t section, const bpx_u8_t *buffer, bpx_size_t size);
 bpx_u64_t bpx_section_seek(bpx_section_t section, bpx_u64_t pos);
 int bpx_section_flush(bpx_section_t section);
-void bpx_section_close(bpx_section_t *section);
+
+/* Specialized */
+bpx_size_t bpx_section_write_append(bpx_section_t section, const bpx_u8_t *buffer, bpx_size_t size);
+int bpx_section_truncate(bpx_section_t section, bpx_size_t size, bpx_size_t *new_size);
+int bpx_section_shift(bpx_section_t section, bpx_i64_t amount);
 
 #endif

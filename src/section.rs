@@ -36,6 +36,9 @@ use crate::ffi_helper::export;
 use crate::ffi_helper::export_object;
 use crate::ffi_helper::OutCell;
 use crate::ffi_helper::Object;
+use bpx::core::SectionData;
+use bpx::traits::Shift;
+use bpx::traits::ShiftTo;
 
 export_object! {
     Container {
@@ -70,6 +73,8 @@ export_object! {
 
 export_object! {
     Section {
+        fn bpx_section_size(this) -> usize { this.size() }
+
         mut fn bpx_section_read(this, buffer: *mut u8, size: usize) -> usize {
             std::ptr::write_bytes(buffer, 0, size); //This allows us to initialize the buffer in preparation of std::io::Read call
             let slice = std::slice::from_raw_parts_mut(buffer, size);
@@ -82,11 +87,32 @@ export_object! {
             this.write(slice).unwrap_or(usize::MAX)
         }
 
+        //SAFETY: make sure buffer is initialized otherwise UB!
+        mut fn bpx_section_write_append(this, buffer: *const u8, size: usize) -> usize {
+            let slice = std::slice::from_raw_parts(buffer, size);
+            this.write_append(slice).unwrap_or(usize::MAX)
+        }
+
         mut fn bpx_section_seek(this, pos: u64) -> u64 {
             this.seek(SeekFrom::Start(pos)).unwrap_or(u64::MAX)
         }
 
         mut fn bpx_section_flush(this) -> c_int { this.flush().map(|_| 0).unwrap_or(-1) }
+
+        mut fn bpx_section_truncate(this, size: usize, new_size: OutCell<usize>) -> c_int {
+            let size = unwrap_or_err!(this.truncate(size).map_err(|_| -1));
+            new_size.set(size);
+            0
+        }
+
+        mut fn bpx_section_shift(this, amount: i64) -> c_int {
+            let res = if amount < 0 {
+                this.shift(ShiftTo::Left(-amount as u64))
+            } else {
+                this.shift(ShiftTo::Right(amount as u64))
+            };
+            res.map(|_| 0).unwrap_or(-1)
+        }
 
         close bpx_section_close(this) {}
     }

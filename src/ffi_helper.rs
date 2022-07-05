@@ -31,6 +31,10 @@ pub struct OutCell<T>(*mut T);
 
 impl<T> OutCell<T> {
     pub unsafe fn set(&self, value: T) {
+        if self.0 == std::ptr::null_mut() {
+            //Avoid crashing due to dereference of nullptr.
+            return;
+        }
         *self.0 = value;
     }
 }
