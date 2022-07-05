@@ -27,12 +27,21 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #[repr(transparent)]
-pub struct OutCell<T>(*const T);
+pub struct OutCell<T>(*mut T);
 
 impl<T> OutCell<T> {
-    pub fn new(value: T) -> OutCell<T> {
+    pub unsafe fn set(&self, value: T) {
+        *self.0 = value;
+    }
+}
+
+#[repr(transparent)]
+pub struct Object<T>(*const T);
+
+impl<T> Object<T> {
+    pub fn new(value: T) -> Object<T> {
         let host = Box::new(value);
-        OutCell(Box::into_raw(host))
+        Object(Box::into_raw(host))
     }
 }
 
@@ -63,23 +72,23 @@ macro_rules! export_object {
     (
         $obj: ty {
             $(
-                mut $mut_name: ident ($mut_self: ident, $($mut_pname: ident: $mut_ptype: ty),*) $(-> $mut_ret: ty)? $mut_body: block
+                mut fn $mut_name: ident ($mut_self: ident $(, $($mut_pname: ident: $mut_ptype: ty),*)?) $(-> $mut_ret: ty)? $mut_body: block
             )*
             $(
-                $name: ident ($self: ident, $($pname: ident: $ptype: ty),*) $(-> $ret: ty)? $body: block
+                fn $name: ident ($self: ident $(, $($pname: ident: $ptype: ty),*)?) $(-> $ret: ty)? $body: block
             )*
             $(close $closer_name: ident ($closer_self: ident) $closer_body: block)?
         }
     ) => {
         export! {
             $(
-                fn $mut_name($mut_self: *mut $obj, $($mut_pname: $mut_ptype),*) $(-> $mut_ret)? {
+                fn $mut_name($mut_self: *mut $obj $(, $($mut_pname: $mut_ptype),*)?) $(-> $mut_ret)? {
                     let $mut_self = &mut *$mut_self;
                     $mut_body
                 }
             )*
             $(
-                fn $name($self: *const $obj, $($pname: $ptype),*) $(-> $ret)? {
+                fn $name($self: *const $obj $(, $($pname: $ptype),*)?) $(-> $ret)? {
                     let $self = &*$self;
                     $body
                 }

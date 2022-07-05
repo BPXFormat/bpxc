@@ -32,70 +32,62 @@ use crate::types::{Container, Handle, Section};
 use crate::error_codes::unwrap_or_err;
 use crate::error_codes::{CErrCode, ERR_NONE};
 use crate::types::SectionHeader;
-use crate::export;
+use crate::ffi_helper::export;
+use crate::ffi_helper::export_object;
+use crate::ffi_helper::OutCell;
+use crate::ffi_helper::Object;
 
-export! {
-    fn bpx_section_get_header(container: *const Container, handle: Handle, section_header: *mut SectionHeader)
-    {
-        let container = &*container;
-        let section_header = &mut *section_header;
-        let section = container.sections().header(bpx::core::Handle::from_raw(handle));
-        section_header.size = section.size;
-        section_header.chksum = section.chksum;
-        section_header.csize = section.csize;
-        section_header.flags = section.flags;
-        section_header.ty = section.ty;
-        section_header.pointer = section.pointer;
+export_object! {
+    Container {
+        fn bpx_section_get_header(this, handle: Handle, section_header: OutCell<SectionHeader>) {
+            let section = this.sections().header(bpx::core::Handle::from_raw(handle));
+            section_header.set(SectionHeader {
+                size: section.size,
+                chksum: section.chksum,
+                csize: section.csize,
+                flags: section.flags,
+                ty: section.ty,
+                pointer: section.pointer
+            });
+        }
+
+        fn bpx_section_load(this, handle: Handle, out: OutCell<Object<Section>>) -> c_uint {
+            let section = unwrap_or_err!(this.sections()
+                .load(bpx::core::Handle::from_raw(handle)).map_err(|e| e.cerr_code()));
+            out.set(Object::new(section));
+            ERR_NONE
+        }
+
+        fn bpx_section_open(this, handle: Handle, out: OutCell<Object<Section>>) -> c_uint
+        {
+            let section = unwrap_or_err!(this.sections()
+                .open(bpx::core::Handle::from_raw(handle)).map_err(|e| e.cerr_code()));
+            out.set(Object::new(section));
+            ERR_NONE
+        }
     }
+}
 
-    fn bpx_section_load(container: *const Container, handle: Handle, out: *mut *const Section) -> c_uint
-    {
-        let container = &*container;
-        let section = unwrap_or_err!(container.sections().load(bpx::core::Handle::from_raw(handle)).map_err(|e| e.cerr_code()));
-        let host = Box::new(section);
-        *out = Box::into_raw(host);
-        ERR_NONE
-    }
+export_object! {
+    Section {
+        mut fn bpx_section_read(this, buffer: *mut u8, size: usize) -> usize {
+            std::ptr::write_bytes(buffer, 0, size); //This allows us to initialize the buffer in preparation of std::io::Read call
+            let slice = std::slice::from_raw_parts_mut(buffer, size);
+            this.read(slice).unwrap_or(usize::MAX)
+        }
 
-    fn bpx_section_open(container: *const Container, handle: Handle, out: *mut *const Section) -> c_uint
-    {
-        let container = &*container;
-        let section = unwrap_or_err!(container.sections().open(bpx::core::Handle::from_raw(handle)).map_err(|e| e.cerr_code()));
-        let host = Box::new(section);
-        *out = Box::into_raw(host);
-        ERR_NONE
-    }
+        //SAFETY: make sure buffer is initialized otherwise UB!
+        mut fn bpx_section_write(this, buffer: *const u8, size: usize) -> usize {
+            let slice = std::slice::from_raw_parts(buffer, size);
+            this.write(slice).unwrap_or(usize::MAX)
+        }
 
-    fn bpx_section_read(section: *mut Section, buffer: *mut u8, size: usize) -> usize {
-        let section = &mut *section;
-        std::ptr::write_bytes(buffer, 0, size); //This allows us to initialize the buffer in preparation of std::io::Read call
-        let slice = std::slice::from_raw_parts_mut(buffer, size);
-        section.read(slice).unwrap_or(usize::MAX)
-    }
+        mut fn bpx_section_seek(this, pos: u64) -> u64 {
+            this.seek(SeekFrom::Start(pos)).unwrap_or(u64::MAX)
+        }
 
-    //SAFETY: make sure buffer is initialized otherwise UB!
-    fn bpx_section_write(section: *mut Section, buffer: *const u8, size: usize) -> usize {
-        let section = &mut *section;
-        let slice = std::slice::from_raw_parts(buffer, size);
-        section.write(slice).unwrap_or(usize::MAX)
-    }
+        mut fn bpx_section_flush(this) -> c_int { this.flush().map(|_| 0).unwrap_or(-1) }
 
-    fn bpx_section_seek(section: *mut Section, pos: u64) -> u64
-    {
-        let section = &mut *section;
-        section.seek(SeekFrom::Start(pos)).unwrap_or(u64::MAX)
-    }
-
-    fn bpx_section_flush(section: *mut Section) -> c_int
-    {
-        let section = &mut *section;
-        section.flush().map(|_| 0).unwrap_or(-1)
-    }
-
-    fn bpx_section_close(section: *mut *mut Section)
-    {
-        let b = Box::from_raw(*section);
-        drop(b); // deallocate the heap wrapper and unlock the RefMut
-        std::ptr::write(section, std::ptr::null_mut()); // reset user pointer to NULL
+        close bpx_section_close(this) {}
     }
 }
