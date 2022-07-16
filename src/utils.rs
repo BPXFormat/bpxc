@@ -32,7 +32,7 @@ use crate::ffi_helper::export;
 use crate::error_codes::unwrap_or_err;
 
 export! {
-    fn hash(str: *const c_char) -> u64 {
+    fn bpx_hash(str: *const c_char) -> u64 {
         let str = unwrap_or_err!(CStr::from_ptr(str).to_str().map_err(|_| 0));
         bpx::utils::hash(str)
     }

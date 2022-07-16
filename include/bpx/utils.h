@@ -31,6 +31,6 @@
 
 #include "bpx/types.h"
 
-bpx_u64_t hash(const char *str);
+bpx_u64_t bpx_hash(const char *str);
 
 #endif
