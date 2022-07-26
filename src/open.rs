@@ -57,7 +57,7 @@ export!
     fn bpx_container_open(file: *const c_char, out: OutCell<Object<Container>>) -> c_uint
     {
         let path = unwrap_or_err!(cstr_to_path(CStr::from_ptr(file)));
-        let f = unwrap_or_err!(File::open(path).map_err(|_| ERR_FILE_OPEN));
+        let f = unwrap_or_err!(File::options().read(true).write(true).open(path).map_err(|_| ERR_FILE_OPEN));
         let container = unwrap_or_err!(bpx::core::Container::open(ContainerWrapper::from(f)).map_err(|e| e.cerr_code()));
         out.set(Object::new(container));
         ERR_NONE

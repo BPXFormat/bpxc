@@ -111,6 +111,10 @@ export_object! {
             this.sections_mut().create(builder).into_raw()
         }
 
+        mut fn bpx_container_remove_section(this, handle: Handle) {
+            this.sections_mut().remove(bpx::core::Handle::from_raw(handle));
+        }
+
         mut fn bpx_container_save(this) -> c_uint {
             unwrap_or_err!(this.save().map_err(|e| e.cerr_code()));
             ERR_NONE

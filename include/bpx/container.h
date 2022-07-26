@@ -52,6 +52,7 @@ void bpx_container_list_sections(bpx_container_t container, bpx_handle_t *out, s
 bool bpx_container_find_section_by_type(bpx_container_t container, bpx_u8_t ty, bpx_handle_t *handle);
 bool bpx_container_find_section_by_index(bpx_container_t container, bpx_u32_t idx, bpx_handle_t *handle);
 void bpx_container_create_section(bpx_container_t container, const bpx_section_options_t *options);
+void bpx_container_remove_section(bpx_container_t container, bpx_handle_t handle);
 
 bpx_error_t bpx_container_save(bpx_container_t container);
 
